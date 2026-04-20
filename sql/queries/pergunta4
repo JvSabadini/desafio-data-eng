@@ -1,0 +1,15 @@
+SELECT 
+    account_name,
+    rank AS posicao,
+    platform,
+    engagement_rate
+FROM (
+    SELECT 
+        account_name,
+        platform,
+        engagement_rate,
+        ROW_NUMBER() OVER(PARTITION BY account_name ORDER BY engagement_rate DESC) as rank
+    FROM refined.fct_posts
+    WHERE engagement_rate IS NOT NULL
+) AS ranking_por_conta
+WHERE rank <= 3;

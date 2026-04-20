@@ -1,0 +1,10 @@
+SELECT
+    post_id,
+    account_name,
+    platform,
+    content_type,
+    engagement_rate
+FROM refined.fct_posts
+WHERE engagement_rate IS NOT NULL
+ORDER BY engagement_rate DESC
+LIMIT 10;

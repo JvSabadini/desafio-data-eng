@@ -1,0 +1,13 @@
+SELECT DISTINCT ON (account_name)
+    account_name,
+    CASE CAST(EXTRACT(DOW FROM created_at) AS INT)
+        WHEN 0 THEN 'Domingo' WHEN 1 THEN 'Segunda' WHEN 2 THEN 'Terça'
+        WHEN 3 THEN 'Quarta' WHEN 4 THEN 'Quinta' WHEN 5 THEN 'Sexta' WHEN 6 THEN 'Sábado'
+    END AS melhor_dia,
+    ROUND(engagement_rate, 2) AS engajamento
+FROM refined.fct_posts
+WHERE engagement_rate IS NOT NULL
+ORDER BY account_name, engagement_rate DESC;
+
+--Eu usei a tabela fct_posts, onde a gnt já tinha o engajamento calculado. 
+--Filtrei os valores nulos e usei o DISTINCT para trazer apenas o dia de maior sucesso de cada marca.

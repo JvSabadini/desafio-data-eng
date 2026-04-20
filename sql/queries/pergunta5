@@ -1,0 +1,9 @@
+SELECT DISTINCT ON (account_name)
+    account_name,
+    content_type AS melhor_formato,
+    ROUND(AVG(engagement_rate) OVER(PARTITION BY account_name, content_type), 2) AS engajamento_medio
+FROM refined.fct_posts
+WHERE engagement_rate IS NOT NULL
+ORDER BY account_name, engajamento_medio DESC;
+--calcula a média de engajamento para cada tipo de formato
+-- dentro de cada conta e retorna apenas o formato campeão de cada influenciador

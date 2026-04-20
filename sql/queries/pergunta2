@@ -1,0 +1,10 @@
+SELECT DISTINCT ON (p.account_name)
+    p.account_name,
+    c.platform AS plataforma_pior_sentimento,
+    ROUND((SUM(CASE WHEN c.sentiment = 'negativo' THEN 1 ELSE 0 END)::NUMERIC / COUNT(*)) * 100, 2) AS pct_negativo
+FROM refined.fct_comments c
+JOIN refined.fct_posts p ON c.post_id = p.post_id
+GROUP BY p.account_name, c.platform
+ORDER BY p.account_name, pct_negativo DESC;
+
+-- Eu usei as tabelas unificadas da camada Refined para não ter que fazer códigos diferentes para Instagram e TikTok
