@@ -1,38 +1,44 @@
 import os
+import pandas as pd
 from sqlalchemy import create_engine, text
 
 DATABASE_URI = 'postgresql+psycopg2://retize_user:retize_password@localhost:5432/retize_db'
 engine = create_engine(DATABASE_URI)
 
-def executar_pasta_sql(nome_da_pasta):
-    """Lê e executa todos os arquivos .sql de uma pasta específica."""
-    print(f"\n--- Iniciando transformações na pasta: {nome_da_pasta} ---")
+def carregar_raw():
+    print("--- Preparando banco e limpando dados antigos ---")
     
-    if not os.path.exists(nome_da_pasta):
-        print(f"Erro: A pasta '{nome_da_pasta}' não existe!")
-        return
-
-    arquivos = sorted([f for f in os.listdir(nome_da_pasta) if f.endswith('.sql')])
-    
-    for arquivo in arquivos:
-        caminho_arquivo = os.path.join(nome_da_pasta, arquivo)
-        print(f"Executando: {arquivo}...")
+    with engine.connect() as conexao:
+        # O comando CASCADE apaga as tabelas e também as Views que dependem delas
+        conexao.execute(text("DROP SCHEMA IF EXISTS raw CASCADE;"))
+        conexao.execute(text("DROP SCHEMA IF EXISTS trusted CASCADE;"))
+        conexao.execute(text("DROP SCHEMA IF EXISTS refined CASCADE;"))
         
-        try:
-            with open(caminho_arquivo, 'r', encoding='utf-8') as f:
-                query_sql = f.read()
-            
-            with engine.connect() as conexao:
-                conexao.execute(text(query_sql))
-                conexao.commit()
-            print(f"Sucesso: {arquivo}!")
-            
-        except Exception as e:
-            print(f"Erro ao rodar {arquivo}: {e}")
+        # Recria os schemas novinhos em folha
+        conexao.execute(text("CREATE SCHEMA raw;"))
+        conexao.execute(text("CREATE SCHEMA trusted;"))
+        conexao.execute(text("CREATE SCHEMA refined;"))
+        conexao.commit()
+
+    print("--- Iniciando carga na camada RAW ---")
+    arquivos = {
+        'instagram_comments.csv': 'instagram_comments',
+        'instagram_media.csv': 'instagram_media',
+        'instagram_media_insights.csv': 'instagram_media_insights',
+        'tiktok_comments.csv': 'tiktok_comments',
+        'tiktok_posts.csv': 'tiktok_posts'
+    }
+
+    for arquivo, tabela in arquivos.items():
+        caminho = os.path.join('data', arquivo)
+        if os.path.exists(caminho):
+            print(f"Lendo {arquivo}...")
+            df = pd.read_csv(caminho)
+            df.to_sql(tabela, engine, schema='raw', if_exists='replace', index=False)
+            print(f"OK: Tabela raw.{tabela} criada.")
+        else:
+            print(f"Erro: Arquivo {caminho} não encontrado. Verifique a pasta 'data'.")
 
 if __name__ == "__main__":
-    executar_pasta_sql('sql/trusted')
-
-    executar_pasta_sql('sql/refined')
-    
-    print("Todas as transformações foram concluídas com sucesso!")
+    carregar_raw()
+    print("Carga da camada RAW finalizada com sucesso!")
