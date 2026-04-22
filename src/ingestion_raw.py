@@ -9,12 +9,10 @@ def carregar_raw():
     print("--- Preparando banco e limpando dados antigos ---")
     
     with engine.connect() as conexao:
-        # O comando CASCADE apaga as tabelas e também as Views que dependem delas
         conexao.execute(text("DROP SCHEMA IF EXISTS raw CASCADE;"))
         conexao.execute(text("DROP SCHEMA IF EXISTS trusted CASCADE;"))
         conexao.execute(text("DROP SCHEMA IF EXISTS refined CASCADE;"))
         
-        # Recria os schemas novinhos em folha
         conexao.execute(text("CREATE SCHEMA raw;"))
         conexao.execute(text("CREATE SCHEMA trusted;"))
         conexao.execute(text("CREATE SCHEMA refined;"))
