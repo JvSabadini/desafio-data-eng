@@ -10,6 +10,10 @@ Camada Refined: Tabelas analíticas unificadas com cálculo de taxa de engajamen
 Tecnologias
 Python 3.11 (Pandas, SQLAlchemy, Psycopg2)
 
+Outras instalações
+SQL-TOOLS
+SQLTools PostgreSQL/Cockroach Driver
+
 PostgreSQL (Docker)
 
 SQL (Transformações e Consultas)
